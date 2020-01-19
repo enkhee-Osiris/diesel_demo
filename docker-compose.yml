@@ -1,0 +1,28 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: diesel_demo
+  server:
+    build: ./server
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/usr/src/app
+    links:
+      - db
+    environment:
+      DATABASE_URL: postgres://user:password@db:5432/diesel_demo
+    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup"
+
+volumes:
+  db_data: {}
