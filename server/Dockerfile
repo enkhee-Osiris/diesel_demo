@@ -6,4 +6,6 @@ RUN cargo install diesel_cli --no-default-features --features postgres \
 
 WORKDIR /usr/src/app
 
+COPY . .
+
 EXPOSE 3001

@@ -1,0 +1,5 @@
+edition = "2018"
+
+# For nightly edition
+# format_code_in_doc_comments = true
+# format_macro_matchers = true
