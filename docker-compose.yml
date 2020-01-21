@@ -3,26 +3,35 @@ version: "3.7"
 services:
   db:
     image: postgres:alpine
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgres
-    restart: always
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: user
-      POSTGRES_DB: diesel_demo
-  server:
-    build: ./server
+      - POSTGRES_DB=${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - TZ=Asia/Ulaanbaatar
+      - PGTZ=Asia/Ulaanbaatar
+    networks:
+      - network
     ports:
-      - "3001:3001"
+      - 5432:5432
+    volumes:
+      - database:/var/lib/postgres
+    restart: always
+  server:
+    depends_on:
+      - db
+    build: ./server
+    environment:
+      - DATABASE_URL=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@db:5432/${DATABASE_NAME}
+    networks:
+      - network
+    ports:
+      - 3001:3001
     volumes:
       - ./server:/usr/src/app
-    links:
-      - db
-    environment:
-      DATABASE_URL: postgres://user:password@db:5432/diesel_demo
-    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo run --release"
+    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo watch -x run"
+
+networks:
+  network:
 
 volumes:
-  db_data: {}
+  database:
